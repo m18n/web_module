@@ -6,6 +6,7 @@ find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 include_directories("include")
 add_subdirectory(Crow)
-add_executable(${PROJECT_NAME} main.cpp url.cpp controller.cpp web.cpp)
+#event.cpp communicate.cpp
+add_executable(${PROJECT_NAME} main.cpp url.cpp controller.cpp web.cpp connector_manager.cpp)
 #add_library(${PROJECT_NAME} SHARED src/server.cpp src/json.c src/exeception.cpp)
 target_link_libraries(${PROJECT_NAME} -lm -pthread Crow ${CURL_LIBRARIES})
