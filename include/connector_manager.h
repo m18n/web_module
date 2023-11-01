@@ -405,7 +405,7 @@ class connector_manager {
   }
   void getevent() {
     std::string res_str = "";
-    t_json jsonres;
+     t_json json_temp;
     std::string ns = NAME_SERVER;
     int col = 0;
     while (res_str == "") {
@@ -418,11 +418,18 @@ class connector_manager {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
       }
     }
+    if(res_str[0]=='{'){
+      json_temp=t_json::parse(res_str);
+      if(json_temp.contains("$error")){
+        get_my_id();
+        return;
+      }
+    }
     size_t pos = 0;  // Знаходимо перше входження
     t_json id;
     t_json meta;
     t_json data;
-    t_json json_temp;
+  
     int n = 0;
     std::string str_size_json;
     str_size_json.resize(10);
