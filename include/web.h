@@ -3,7 +3,7 @@
 #include <iostream>
 #include"connector_manager.h"
 void test(t_json send,t_json answer);
-void code(connector_manager* conn,t_json json_req);
+void code(connector::connector_manager* conn,t_json json_req);
 class web {
 private:
 void add_handlers(){
@@ -11,8 +11,11 @@ void add_handlers(){
 }
 public:
   web() {
+    
     t_json json;
     add_handlers();
+    conn.add_connection("127.0.0.1:3000");
+    conn.on();
     // json["meta"]["$type_event"]="req";
     // json["meta"]["$type_obj"]="test";
     // json["meta"]["$list_servers"][0]={{"name","tasker"}};
@@ -30,7 +33,7 @@ public:
   }
 
 private:
-  connector_manager conn;
+  connector::connector_manager conn;
   
   crow::SimpleApp website;
 };

@@ -1,6 +1,6 @@
 #include"web.h"
 
-void code(connector_manager* conn,t_json json_req){
+void code(connector::connector_manager* conn,t_json json_req){
     
     t_json res;
     res["data"]["code"]="2222";

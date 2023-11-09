@@ -1,5 +1,5 @@
 #include "controller.h"
-connector_manager* controller::conn;
+connector::connector_manager* controller::conn;
 void controller::static_files(crow::response& res, std::string path){
     res.set_static_file_info("site/" + path);
     res.end();
