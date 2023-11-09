@@ -10,6 +10,8 @@
 #include <thread>
 #include "curl_wrapper.h"
 #include "mutex"
+#include <cstdlib>  // Include the C Standard Library for random number generation
+#include <ctime>  
 #define NAME_SERVER "web"
 std::string GetLocalIP();
 struct return_data {
@@ -154,36 +156,46 @@ class connector_manager {
   bool empty_thread = false;
   std::mutex mt;
   curl_wrapper cw;
-
+  std::mutex mt_ret;
   bool work_loop = false;
 
  private:
   void add_returns(return_data d) {
+    mt_ret.lock();
     for (int i = 0; i < returns.size(); i++) {
       if (returns[i].respon_id == -1) {
         returns[i] = d;
+        mt_ret.unlock();
         return;
       }
     }
+   
     returns.push_back(d);
+     mt_ret.unlock();
   }
-  void delete_return(return_data d) {
-    for (int i = 0; i < returns.size(); i++) {
-      if (returns[i].respon_id == d.respon_id) {
-        returns[i].respon_id = -1;
-        return;
-      }
-    }
-  }
-  int search_returns(int respon_id, std::string server_hash) {
+  void call_return(int respon_id,std::string server_hash,t_json answer){
+    mt_ret.lock();
     for (int i = 0; i < returns.size(); i++) {
       if (returns[i].respon_id == respon_id &&
           returns[i].server_hash == server_hash) {
-        return i;
+        returns[i].callback(returns[i].json_send,answer);
+        init_return_data(&returns[i]);
       }
     }
-    return -1;
+    mt_ret.unlock();
   }
+  void delete_return(return_data d) {
+    mt_ret.lock();
+    for (int i = 0; i < returns.size(); i++) {
+      if (returns[i].respon_id == d.respon_id) {
+        returns[i].respon_id = -1;
+        mt_ret.unlock();
+        return;
+      }
+    }
+    mt_ret.unlock();
+  }
+  
   void get_my_id() {
     std::string hash_worker = "";
     std::string server_hash;
@@ -317,7 +329,7 @@ class connector_manager {
         t_json jsonres = cw.get_page_json("/api/send/" + server_hash + "/" +
                                           ns + "/command/" + hash_worker +
                                           "/event/start/" + event_id);
-        // std::cout<<"RES: "<<jsonres.dump()<<"\n";
+        std::cout<<"START EVENT: "<<jsonres.dump()<<"\n";
         if (jsonres.contains("$error")) {
           get_my_id();
         } else {
@@ -340,7 +352,7 @@ class connector_manager {
         t_json jsonres = cw.get_page_json("/api/send/" + server_hash + "/" +
                                           ns + "/command/" + hash_worker +
                                           "/event/finish/" + event_id);
-        std::cout << jsonres.dump() << "\n";
+        std::cout <<"END EVENT: "<< jsonres.dump() << "\n";
         // std::cout<<"RES: "<<jsonres.dump()<<"\n";
         if (jsonres.contains("$error")) {
           get_my_id();
@@ -378,19 +390,17 @@ class connector_manager {
       }
       start_time = std::chrono::high_resolution_clock::now();
       if (json["meta"]["$type_event"] == "res") {
-        int index = search_returns(json["meta"]["$respon_id"],
-                                   json["meta"]["$server_hash"]);
-        if (index != -1) {
           if (start_event(json["id"]) != -2) {
-            returns[index].callback(returns[index].json_send, json);
+            call_return(json["meta"]["$respon_id"],
+                                   json["meta"]["$server_hash"], json);
             end_event(json["id"]);
           }
-          init_return_data(&returns[index]);
-        }
       } else if (json["meta"]["$type_event"] == "req") {
         for (int j = 0; j < handlers.size(); j++) {
           if (handlers[j].nameobj == json["meta"]["$type_obj"]) {
+            std::cout<<"START JSON: "<<json["meta"]["$respon_id"]<<"\n";
             if (start_event(json["id"]) != -2) {
+              std::cout<<"CALLBACK: "<<json["meta"]["$respon_id"]<<"\n";
               handlers[j].callback(this, json);
               end_event(json["id"]);
             }
@@ -501,6 +511,7 @@ class connector_manager {
   void loop() {
     while (work_loop == true) {
       getevent();
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }
   void finish_loop() {
