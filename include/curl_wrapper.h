@@ -34,11 +34,11 @@ public:
        
     }
     
-    std::string get_page(std::string ip,const std::string& url) {
+    std::string get_page(std::string ip,const std::string& url,int& res_code) {
         CURL* curl_handle=get_curl();
         std::string path=ip+url;
         std::string downloadedData;
-       
+        
 
         if (curl_handle) {
             curl_easy_setopt(curl_handle, CURLOPT_URL, path.c_str());
@@ -50,13 +50,19 @@ public:
             curl_easy_setopt(curl_handle, CURLOPT_HTTPGET, 1);
             curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &downloadedData);
             CURLcode res = curl_easy_perform(curl_handle);
-            
+            long http_code = 0;
+            curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+            if (res != CURLE_OK) {
+                res_code=-1;
+            } else {
+                res_code=http_code;
+            }
         }
         
         return downloadedData;
     }
     
-    std::string get_page(std::string ip,const std::string& url,std::string json) {
+    std::string get_page(std::string ip,const std::string& url,std::string json,int& res_code) {
         CURL* curl_handle=get_curl();
         std::string path=ip+url;
         std::string downloadedData;
@@ -75,7 +81,13 @@ public:
             curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &downloadedData);
 
             CURLcode res = curl_easy_perform(curl_handle);
-            
+            long http_code = 0;
+            curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+            if (res != CURLE_OK) {
+                res_code=-1;
+            } else {
+                res_code=http_code;
+            }
             // if (res != CURLE_OK) {
             //     std::cerr << "Curl error: " << curl_easy_strerror(res) << std::endl;
             // }
@@ -84,8 +96,8 @@ public:
        
         return downloadedData;
     }
-    t_json get_page_json(std::string ip,const std::string& url) {
-        std::string downloadedData=get_page(ip,url);
+    t_json get_page_json(std::string ip,const std::string& url,int& res_code) {
+        std::string downloadedData=get_page(ip,url,res_code);
         t_json jsondata;
         try
         {
@@ -97,8 +109,8 @@ public:
         }
         return jsondata;
     }
-    t_json get_page_json(std::string ip,const std::string& url,std::string json) {
-        std::string downloadedData=get_page(ip,url,json);
+    t_json get_page_json(std::string ip,const std::string& url,std::string json,int& res_code) {
+        std::string downloadedData=get_page(ip,url,json,res_code);
         t_json jsondata;
         try
         {
