@@ -1,5 +1,4 @@
 #pragma once
-#define NAME_CLIENT "web"
 #include "url.h"
 #include <iostream>
 #include"connector_manager.h"
@@ -16,7 +15,8 @@ public:
     
     t_json json;
     add_handlers();
-    conn.add_connection("127.0.0.1:3000");
+    conn.name_client="web";
+    conn.add_connection("127.0.0.1:3001");
     //conn.add_connection("127.0.0.1:3001");
     conn.on();
     // json["meta"]["$type_event"]="req";
