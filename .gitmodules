@@ -1,3 +1,0 @@
-[submodule "connector_manager"]
-	path = connector_manager
-	url = https://github.com/m18n/connector_manager.git
