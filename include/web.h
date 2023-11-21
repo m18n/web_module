@@ -3,8 +3,8 @@
 #include <iostream>
 #include"connector_manager.h"
 
-void test(t_json send,t_json answer);
-void code(connector::connector_manager* conn,t_json json_req);
+void test(connector::t_json send,connector::t_json answer);
+void code(connector::connector_manager* conn,connector::t_json json_req);
 class web {
 private:
 void add_handlers(){
@@ -12,11 +12,13 @@ void add_handlers(){
 }
 public:
   web() {
-    
-    t_json json;
+    connector::connector_log=&log;
+    log.add_log_level(0);
+    log.add_log_level(1);
+    connector::t_json json;
     add_handlers();
     conn.name_client="web";
-    conn.add_connection("127.0.0.1:3001");
+    conn.add_connection("127.0.0.1:3000");
     //conn.add_connection("127.0.0.1:3001");
     conn.on();
     // json["meta"]["$type_event"]="req";
@@ -34,9 +36,9 @@ public:
     //website.port(3002).run();
     
   }
-
+  
 private:
   connector::connector_manager conn;
-  
+  connector::Logger log;
   crow::SimpleApp website;
 };

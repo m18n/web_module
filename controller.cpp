@@ -11,7 +11,7 @@ void controller::static_files(crow::response& res, std::string path){
     res.end();
  }
  void controller::get_events(crow::request& req, crow::response& res){
-    t_json json=conn->get_all_events();
+    connector::t_json json=conn->get_all_events();
     res.write(json.dump());
     res.end();
  }
