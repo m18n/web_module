@@ -13,12 +13,13 @@ void add_handlers(){
 public:
   web() {
     connector::connector_log=&log;
-    log.add_log_level(0);
-    log.add_log_level(1);
+    //log.add_log_level(0);
+    //log.add_log_level(1);
     connector::t_json json;
     add_handlers();
     conn.name_client="web";
     conn.add_connection("127.0.0.1:3000");
+   
     //conn.add_connection("127.0.0.1:3001");
     conn.on();
     // json["meta"]["$type_event"]="req";
